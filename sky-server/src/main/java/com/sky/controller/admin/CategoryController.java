@@ -44,4 +44,14 @@ public class CategoryController {
         categoryService.addCategory(categoryDTO);
         return Result.success();
     }
+
+    /**
+     * 启用禁用
+     */
+    @PostMapping("status/{status}")
+    public Result startOrStop(@PathVariable Integer status,Long id){
+        log.info("启用或禁用分类id:{},status:{}",id,status);
+        categoryService.startOrStop(status,id);
+        return Result.success();
+    }
 }
