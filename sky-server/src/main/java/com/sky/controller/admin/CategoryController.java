@@ -52,6 +52,7 @@ public class CategoryController {
      * 启用禁用
      */
     @PostMapping("status/{status}")
+    @ApiOperation("启用或者禁用一个分类")
     public Result startOrStop(@PathVariable Integer status,Long id){
         log.info("启用或禁用分类id:{},status:{}",id,status);
         categoryService.startOrStop(status,id);
@@ -62,6 +63,7 @@ public class CategoryController {
      * 修改分类
      */
     @PutMapping
+    @ApiOperation("修改分类信息")
     public Result edit(@RequestBody CategoryDTO categoryDTO){
         log.info("修改分类信息:{}",categoryDTO);
         categoryService.edit(categoryDTO);
