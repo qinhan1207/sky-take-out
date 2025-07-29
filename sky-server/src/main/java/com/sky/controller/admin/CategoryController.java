@@ -64,4 +64,15 @@ public class CategoryController {
         categoryService.edit(categoryDTO);
         return Result.success();
     }
+
+    /**
+     * 分解id删除分类
+     */
+    @DeleteMapping
+    @ApiOperation("根据id删除分类")
+    public Result remove(Long id){
+        log.info("根据id删除分类：{}",id);
+        categoryService.remove(id);
+        return Result.success();
+    }
 }
