@@ -54,4 +54,14 @@ public class CategoryController {
         categoryService.startOrStop(status,id);
         return Result.success();
     }
+
+    /**
+     * 修改分类
+     */
+    @PutMapping
+    public Result edit(@RequestBody CategoryDTO categoryDTO){
+        log.info("修改分类信息:{}",categoryDTO);
+        categoryService.edit(categoryDTO);
+        return Result.success();
+    }
 }
