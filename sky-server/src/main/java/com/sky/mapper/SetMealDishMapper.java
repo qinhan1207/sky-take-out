@@ -30,7 +30,7 @@ public interface SetMealDishMapper {
 
     /**
      * 根据套餐id删除对应的菜品
-     * @param setMealId
+     * @param setMealIds
      */
-    void deleteBySetMealId(Long setMealId);
+    void deleteBySetMealId(List<Long> setMealIds);
 }

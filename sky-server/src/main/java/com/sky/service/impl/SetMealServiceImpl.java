@@ -9,6 +9,7 @@ import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.exception.SetmealEnableFailedException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetMealDishMapper;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -129,8 +131,10 @@ public class SetMealServiceImpl implements SetMealService {
         setMealMapper.update(setmeal);
         // 2.修改套餐对应的菜品信息，采用先删除，后增加的方式
         Long setMealId = setmealDTO.getId();
+        List<Long> setMealIds = new ArrayList<>();
+        setMealIds.add(setMealId);
         // 根据套餐id删除套餐表所的菜品
-        setMealDishMapper.deleteBySetMealId(setMealId);
+        setMealDishMapper.deleteBySetMealId(setMealIds);
         List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
         if (!CollectionUtils.isEmpty(setmealDishes)) {
             setmealDishes.forEach((setmealDish) -> {
@@ -138,5 +142,25 @@ public class SetMealServiceImpl implements SetMealService {
             });
             setMealDishMapper.addWithDish(setmealDishes);
         }
+    }
+
+    /**
+     * 批量删除套餐及其对应的菜品，起售中的套餐不能删除
+     * @param ids
+     */
+    @Override
+    @Transactional
+    public void deleteBatch(List<Long> ids) {
+        // 起售的套餐不允许删除
+        ids.forEach((id)->{
+            Setmeal setmeal = setMealMapper.getById(id);
+            if (setmeal.getStatus().equals(StatusConstant.ENABLE)){
+                throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
+            }
+        });
+        // 删除套餐基本信息
+        setMealMapper.deleteById(ids);
+        // 删除与套餐所绑定的菜品
+        setMealDishMapper.deleteBySetMealId(ids);
     }
 }

@@ -21,7 +21,10 @@
 
     <!--根据套餐id删除对应的菜品-->
     <delete id="deleteBySetMealId">
-        delete from setmeal_dish where setmeal_id = #{setMealId}
+        delete from setmeal_dish where setmeal_id in
+        <foreach collection="setMealIds" item="setMealId" separator="," open="(" close=")">
+            #{setMealId}
+        </foreach>
     </delete>
 
 </mapper>
