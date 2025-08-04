@@ -112,4 +112,31 @@ public class SetMealServiceImpl implements SetMealService {
                 .build();
         setMealMapper.update(setmeal);
     }
+
+    /**
+     * 修改套餐信息
+     * 1.修改套餐基本信息
+     * 2.修改套餐对应的菜品
+     *
+     * @param setmealDTO
+     */
+    @Override
+    @Transactional
+    public void updateWithDishes(SetmealDTO setmealDTO) {
+        // 1.修改套餐的基本信息
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+        setMealMapper.update(setmeal);
+        // 2.修改套餐对应的菜品信息，采用先删除，后增加的方式
+        Long setMealId = setmealDTO.getId();
+        // 根据套餐id删除套餐表所的菜品
+        setMealDishMapper.deleteBySetMealId(setMealId);
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        if (!CollectionUtils.isEmpty(setmealDishes)) {
+            setmealDishes.forEach((setmealDish) -> {
+                setmealDish.setSetmealId(setMealId);
+            });
+            setMealDishMapper.addWithDish(setmealDishes);
+        }
+    }
 }

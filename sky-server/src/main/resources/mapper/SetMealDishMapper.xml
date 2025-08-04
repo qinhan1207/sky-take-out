@@ -19,4 +19,9 @@
         </foreach>
     </insert>
 
+    <!--根据套餐id删除对应的菜品-->
+    <delete id="deleteBySetMealId">
+        delete from setmeal_dish where setmeal_id = #{setMealId}
+    </delete>
+
 </mapper>
