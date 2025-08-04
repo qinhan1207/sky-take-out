@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.mapper.SetMealDishMapper;
@@ -60,5 +61,23 @@ public class SetMealServiceImpl implements SetMealService {
         Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
 
         return new PageResult(page.getTotal(),page.getResult());
+    }
+
+    /**
+     * 根据id查询套餐及其对应的菜品
+     * @param id
+     * @return
+     */
+    @Override
+    public SetmealVO queryByIdWithDishes(Long id) {
+        // 根据id查询套餐的基本信息
+        Setmeal setmeal = setmealMapper.getById(id);
+        // 根据套餐id查询对应的菜品信息
+        List<SetmealDish> dishes = setMealDishMapper.getDishesBySetMealId(id);
+        // 封装VO
+        SetmealVO setmealVO = new SetmealVO();
+        BeanUtils.copyProperties(setmeal,setmealVO);
+        setmealVO.setSetmealDishes(dishes);
+        return setmealVO;
     }
 }
