@@ -1,5 +1,6 @@
 package com.sky.mapper;
 
+import com.sky.entity.SetmealDish;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -14,4 +15,10 @@ public interface SetMealDishMapper {
      * @return
      */
     List<Long> getSetMealIdsByDishIds(List<Long> dishIds);
+
+    /**
+     * 添加套餐对应的菜品信息
+     * @param setmealDishes
+     */
+    void addWithDish(List<SetmealDish> setmealDishes);
 }
