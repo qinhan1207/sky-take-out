@@ -25,4 +25,11 @@ public interface SetMealService {
      * @return
      */
     SetmealVO queryByIdWithDishes(Long id);
+
+    /**
+     * 套餐的起售停售
+     * @param status
+     * @param id
+     */
+    void startOrStop(Integer status, Long id);
 }
