@@ -56,4 +56,11 @@ public interface SetMealMapper {
      * @param ids
      */
     void deleteById(List<Long> ids);
+
+    /**
+     * C端-根据categoryId查询起售中的套餐
+     * @param setmeal
+     * @return
+     */
+    List<Setmeal> list(Setmeal setmeal);
 }
