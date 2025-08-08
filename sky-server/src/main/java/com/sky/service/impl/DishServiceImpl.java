@@ -1,6 +1,5 @@
 package com.sky.service.impl;
 
-import com.github.pagehelper.Constant;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
@@ -162,12 +161,11 @@ public class DishServiceImpl implements DishService {
     /**
      * 根据分类id查询菜品
      *
-     * @param categoryId
      * @return
      */
     @Override
-    public List<Dish> queryByCategoryId(Long categoryId) {
-        return dishMapper.queryByCategoryId(categoryId);
+    public List<Dish> queryByCategoryId(Dish dish) {
+        return dishMapper.queryByCategoryId(dish);
     }
 
     /**
@@ -217,7 +215,7 @@ public class DishServiceImpl implements DishService {
     @Override
     public List<DishVO> listWithFlavors(Dish dish) {
         // 根据category查询所有的菜品
-        List<Dish> dishes = dishMapper.queryByCategoryId(dish.getCategoryId());
+        List<Dish> dishes = dishMapper.queryByCategoryId(dish);
         List<DishVO> dishVOList = new ArrayList<>();
         // 封装成dishVO
         for (Dish dish1 : dishes) {

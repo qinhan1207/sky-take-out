@@ -44,10 +44,9 @@ public interface DishService {
 
     /**
      * 根据分类id查询菜品
-     * @param categoryId
      * @return
      */
-    List<Dish> queryByCategoryId(Long categoryId);
+    List<Dish> queryByCategoryId(Dish dish);
 
     /**
      * 菜品的起售停售
