@@ -38,4 +38,22 @@
         order by order_time desc
     </select>
 
+    <!--修改订单-->
+    <update id="update">
+        update orders
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="cancelReason">
+                cancel_reason = #{cancelReason},
+            </if>
+            <if test="cancelTime">
+                cancel_time = #{cancelTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
 </mapper>

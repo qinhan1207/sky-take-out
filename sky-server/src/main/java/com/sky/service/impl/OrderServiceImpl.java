@@ -11,6 +11,7 @@ import com.sky.entity.OrderDetail;
 import com.sky.entity.Orders;
 import com.sky.entity.ShoppingCart;
 import com.sky.exception.AddressBookBusinessException;
+import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
@@ -25,9 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -47,6 +48,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 用户下单
+     *
      * @param ordersSubmitDTO
      * @return
      */
@@ -88,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList = new ArrayList<>();
         for (ShoppingCart cart : shoppingCartList) {
             OrderDetail orderDetail = new OrderDetail(); // 订单明细
-            BeanUtils.copyProperties(cart,orderDetail);
+            BeanUtils.copyProperties(cart, orderDetail);
             orderDetail.setOrderId(orders.getId()); // 设置当前订单明细关联的订单id
             orderDetailList.add(orderDetail);
         }
@@ -111,13 +113,14 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 历史订单查询
+     *
      * @param ordersPageQueryDTO
      * @return
      */
     @Override
     public PageResult historyOrders(OrdersPageQueryDTO ordersPageQueryDTO) {
         // 1.使用pagehelper进行分页
-        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
         // 2.查询历史订单信息
         ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
         Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
@@ -138,11 +141,12 @@ public class OrderServiceImpl implements OrderService {
                 list.add(orderVO);
             }
         }
-        return new PageResult(page.getTotal(),list);
+        return new PageResult(page.getTotal(), list);
     }
 
     /**
      * 根据订单id查询订单详情
+     *
      * @param id
      * @return
      */
@@ -152,5 +156,41 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
         orderVO.setOrderDetailList(orderDetailList);
         return orderVO;
+    }
+
+    /**
+     * 取消订单
+     *
+     * @param id
+     */
+    @Override
+    public void cancel(Long id) {
+
+        // 查询当前订单的状态，看商家是否已经接单
+        Orders ordersDB = orderMapper.getById(id);
+
+        // 校验订单是否存在
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+        if (ordersDB.getStatus() > 2) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders orders = new Orders();
+        orders.setId(ordersDB.getId());
+
+        // 订单处于待接单状态下取消订单需要退款
+
+
+        // 更新订单状态、取消原因、取消时间
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason("用户取消");
+        orders.setCancelTime(LocalDateTime.now());
+        orderMapper.update(orders);
+
+
     }
 }
