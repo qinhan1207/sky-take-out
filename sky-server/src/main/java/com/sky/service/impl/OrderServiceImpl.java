@@ -413,6 +413,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 拒单
+     *
      * @param ordersRejectionDTO
      */
     @Override
@@ -451,6 +452,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 管理端取消订单
+     *
      * @param ordersCancelDTO
      */
     @Override
@@ -471,7 +473,7 @@ public class OrderServiceImpl implements OrderService {
 //                    new BigDecimal(0.01));
 //            log.info("申请退款：{}", refund);
             orders.setPayStatus(Orders.REFUND);
-            log.info("取消订单，需要退款：{}",ordersDB.getAmount());
+            log.info("取消订单，需要退款：{}", ordersDB.getAmount());
         }
 
         orders.setId(ordersCancelDTO.getId());
@@ -484,6 +486,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 派送订单
+     *
      * @param id
      */
     @Override
@@ -499,6 +502,28 @@ public class OrderServiceImpl implements OrderService {
                 .id(id)
                 .status(Orders.DELIVERY_IN_PROGRESS)
                 .build();
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 完成订单
+     *
+     * @param id
+     */
+    @Override
+    public void complete(Long id) {
+        Orders ordersDB = orderMapper.getById(id);
+
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Orders orders = Orders.builder()
+                .id(id)
+                .status(Orders.COMPLETED)
+                .deliveryTime(LocalDateTime.now())
+                .build();
+
         orderMapper.update(orders);
     }
 
