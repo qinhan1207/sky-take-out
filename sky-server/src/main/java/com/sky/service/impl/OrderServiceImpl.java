@@ -24,11 +24,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -310,4 +312,64 @@ public class OrderServiceImpl implements OrderService {
 
 
     }
+
+    /**
+     * 订单条件查询
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult page(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+
+        // 查询订单的基本信息
+        Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
+
+        List<OrderVO> orderVOList = getOrderVOList(page);
+
+        return new PageResult(page.getTotal(),orderVOList);
+    }
+
+
+    /**
+     * 返回订单菜品信息
+     * @param page
+     * @return
+     */
+    private List<OrderVO> getOrderVOList(Page<Orders> page){
+        List<OrderVO> orderVOList = new ArrayList<>();
+
+        List<Orders> ordersList = page.getResult();
+        if(!CollectionUtils.isEmpty(ordersList)){
+            for (Orders orders : ordersList) {
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(orders,orderVO);
+                String orderDishes = getOrderDishesStr(orders);
+
+                // 将订单菜品信息封装到VO中，并添加到orderVOList
+                orderVO.setOrderDishes(orderDishes);
+                orderVOList.add(orderVO);
+            }
+        }
+        return orderVOList;
+    }
+
+    /**
+     * 根据订单id获取菜品信息字符串
+     * @param orders
+     * @return
+     */
+    private String getOrderDishesStr(Orders orders){
+        // 根据订单id查询订单详情表（订单表中的菜品和数量）
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+        // 将每一条订单菜品信息拼接为字符串（格式：宫保鸡丁*3；)
+        List<String> orderDishList = orderDetailList.stream().map((orderDetail) -> {
+            String orderDish = orderDetail.getName() + "*" + orderDetail.getNumber() + "；";
+            return orderDish;
+        }).collect(Collectors.toList());
+        return String.join("",orderDishList);
+    }
+
+
 }
