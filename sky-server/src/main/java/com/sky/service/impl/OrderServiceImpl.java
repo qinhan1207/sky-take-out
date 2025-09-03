@@ -18,6 +18,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -229,7 +231,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderVO getDetail(Long id) {
         OrderVO orderVO = new OrderVO();
         Orders orders = orderMapper.getById(id);
-        BeanUtils.copyProperties(orders,orderVO);
+        BeanUtils.copyProperties(orders, orderVO);
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
         orderVO.setOrderDetailList(orderDetailList);
         return orderVO;
@@ -260,7 +262,7 @@ public class OrderServiceImpl implements OrderService {
         orders.setId(ordersDB.getId());
 
         // 订单处于待接单状态下取消订单需要退款
-        if (ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)){
+        if (ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
 //            //调用微信支付退款接口
 //            weChatPayUtil.refund(
 //                    ordersDB.getNumber(), //商户订单号
@@ -284,6 +286,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 再来一单
+     *
      * @param id
      */
     @Override
@@ -307,41 +310,41 @@ public class OrderServiceImpl implements OrderService {
         shoppingCartMapper.insertBatch(shoppingCartList);
 
 
-
-
     }
 
     /**
      * 订单条件查询
+     *
      * @param ordersPageQueryDTO
      * @return
      */
     @Override
     public PageResult page(OrdersPageQueryDTO ordersPageQueryDTO) {
-        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
 
         // 查询订单的基本信息
         Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
 
         List<OrderVO> orderVOList = getOrderVOList(page);
 
-        return new PageResult(page.getTotal(),orderVOList);
+        return new PageResult(page.getTotal(), orderVOList);
     }
 
 
     /**
      * 返回订单菜品信息
+     *
      * @param page
      * @return
      */
-    private List<OrderVO> getOrderVOList(Page<Orders> page){
+    private List<OrderVO> getOrderVOList(Page<Orders> page) {
         List<OrderVO> orderVOList = new ArrayList<>();
 
         List<Orders> ordersList = page.getResult();
-        if(!CollectionUtils.isEmpty(ordersList)){
+        if (!CollectionUtils.isEmpty(ordersList)) {
             for (Orders orders : ordersList) {
                 OrderVO orderVO = new OrderVO();
-                BeanUtils.copyProperties(orders,orderVO);
+                BeanUtils.copyProperties(orders, orderVO);
                 String orderDishes = getOrderDishesStr(orders);
 
                 // 将订单菜品信息封装到VO中，并添加到orderVOList
@@ -354,10 +357,11 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 根据订单id获取菜品信息字符串
+     *
      * @param orders
      * @return
      */
-    private String getOrderDishesStr(Orders orders){
+    private String getOrderDishesStr(Orders orders) {
         // 根据订单id查询订单详情表（订单表中的菜品和数量）
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
 
@@ -366,12 +370,13 @@ public class OrderServiceImpl implements OrderService {
             String orderDish = orderDetail.getName() + "*" + orderDetail.getNumber() + "；";
             return orderDish;
         }).collect(Collectors.toList());
-        return String.join("",orderDishList);
+        return String.join("", orderDishList);
     }
 
 
     /**
      * 各个状态的订单数量统计
+     *
      * @return
      */
     @Override
@@ -394,6 +399,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 接单
+     *
      * @param ordersConfirmDTO
      */
     @Override
@@ -402,6 +408,45 @@ public class OrderServiceImpl implements OrderService {
                 .id(ordersConfirmDTO.getId())
                 .status(Orders.CONFIRMED)
                 .build();
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 拒单
+     *
+     * @param ordersRejectionDTO
+     */
+    @Override
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+
+        Orders ordersDB = orderMapper.getById(ordersRejectionDTO.getId());
+
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+
+        Integer payStatus = ordersDB.getPayStatus();
+        if (payStatus == Orders.PAID) {
+            //用户已支付，需要退款
+//            String refund = weChatPayUtil.refund(
+//                    ordersDB.getNumber(),
+//                    ordersDB.getNumber(),
+//                    new BigDecimal(0.01),
+//                    new BigDecimal(0.01));
+//            log.info("申请退款：{}", refund);
+            log.info("申请退款：{}", ordersDB.getNumber());
+        }
+
+
+        Orders orders = Orders.builder()
+                .id(ordersRejectionDTO.getId())
+                .status(Orders.CANCELLED)
+                .rejectionReason(ordersRejectionDTO.getRejectionReason())
+                .cancelTime(LocalDateTime.now())
+                .payStatus(Orders.REFUND)
+                .build();
+
         orderMapper.update(orders);
     }
 
