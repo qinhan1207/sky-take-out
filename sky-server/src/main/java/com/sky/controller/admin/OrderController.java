@@ -69,7 +69,7 @@ public class OrderController {
 
     @PutMapping("/rejection")
     @ApiOperation("拒单")
-    public Result rejection(OrdersRejectionDTO ordersRejectionDTO){
+    public Result rejection(@RequestBody OrdersRejectionDTO ordersRejectionDTO){
         log.info("拒单:{}",ordersRejectionDTO);
         orderService.rejection(ordersRejectionDTO);
         return Result.success();
