@@ -413,7 +413,6 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 拒单
-     *
      * @param ordersRejectionDTO
      */
     @Override
@@ -435,7 +434,7 @@ public class OrderServiceImpl implements OrderService {
 //                    new BigDecimal(0.01),
 //                    new BigDecimal(0.01));
 //            log.info("申请退款：{}", refund);
-            log.info("申请退款：{}", ordersDB.getNumber());
+            log.info("申请退款：{}", ordersDB.getAmount());
         }
 
 
@@ -446,6 +445,39 @@ public class OrderServiceImpl implements OrderService {
                 .cancelTime(LocalDateTime.now())
                 .payStatus(Orders.REFUND)
                 .build();
+
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 管理端取消订单
+     * @param ordersCancelDTO
+     */
+    @Override
+    public void cancelOrder(OrdersCancelDTO ordersCancelDTO) {
+        // 1.订单存在，且待付款1、待派送3、派送中4、已完成5状态可以进行取消操作
+        Orders ordersDB = orderMapper.getById(ordersCancelDTO.getId());
+
+        Integer payStatus = ordersDB.getPayStatus();
+        // 如果已支付需要进行退款
+        Orders orders = new Orders();
+        //支付状态
+        if (payStatus.equals(Orders.PAID)) {
+            //用户已支付，需要退款
+//            String refund = weChatPayUtil.refund(
+//                    ordersDB.getNumber(),
+//                    ordersDB.getNumber(),
+//                    new BigDecimal(0.01),
+//                    new BigDecimal(0.01));
+//            log.info("申请退款：{}", refund);
+            orders.setPayStatus(Orders.REFUND);
+            log.info("取消订单，需要退款：{}",ordersDB.getAmount());
+        }
+
+        orders.setId(ordersCancelDTO.getId());
+        orders.setStatus(Orders.CANCELLED);
+        orders.setCancelReason(ordersCancelDTO.getCancelReason());
+        orders.setCancelTime(LocalDateTime.now());
 
         orderMapper.update(orders);
     }
