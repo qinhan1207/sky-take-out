@@ -70,12 +70,30 @@
         where id = #{id}
     </update>
 
+    <!--统计营业额数据-->
     <select id="sumByMap" resultType="java.lang.Double">
         select sum(amount) from orders
         <where>
             <if test="begin != null">and order_time &gt; #{begin}</if>
             <if test="end != null">and order_time &lt; #{end}</if>
             <if test="status != null">and status = #{status}</if>
+        </where>
+    </select>
+
+
+    <!--统计订单数据-->
+    <select id="countOrderByMap" resultType="java.lang.Integer">
+        select count(id) from orders
+        <where>
+            <if test="end != null">
+                and order_time &lt; #{end}
+            </if>
+            <if test="begin != null">
+                and order_time &gt; #{begin}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
         </where>
     </select>
 
