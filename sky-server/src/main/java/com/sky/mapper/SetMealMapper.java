@@ -67,7 +67,7 @@ public interface SetMealMapper {
 
     /**
      * 根据套餐id查询菜品
-     * @param id
+     * @param setmealId
      * @return
      */
     List<DishItemVO> getDishItemBySetMealId(Long setmealId);
