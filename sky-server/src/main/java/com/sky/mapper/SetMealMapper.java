@@ -71,4 +71,7 @@ public interface SetMealMapper {
      * @return
      */
     List<DishItemVO> getDishItemBySetMealId(Long setmealId);
+
+    @Select("select count(id) from setmeal where status = #{status}")
+    Integer countByStatus(Integer status);
 }

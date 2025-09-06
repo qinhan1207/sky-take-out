@@ -1,11 +1,16 @@
 package com.sky.service.impl;
 
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.entity.Orders;
+import com.sky.entity.Setmeal;
 import com.sky.mapper.OrderMapper;
+import com.sky.mapper.SetMealMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.WorkspaceService;
 import com.sky.vo.BusinessDataVO;
 import com.sky.vo.OrderOverViewVO;
+import com.sky.vo.SetmealOverViewVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +30,9 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private SetMealMapper setMealMapper;
 
 
     /**
@@ -122,6 +130,23 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .completedOrders(completedOrders)
                 .cancelledOrders(cancelledOrders)
                 .allOrders(allOrders)
+                .build();
+    }
+
+    /**
+     * 查询套餐总览
+     * @return
+     */
+    @Override
+    public SetmealOverViewVO overviewSetmeals() {
+        // 已起售套餐数量
+        Integer sold = setMealMapper.countByStatus(StatusConstant.ENABLE);
+        // 已停售套餐数量
+        Integer discontinued = setMealMapper.countByStatus(StatusConstant.DISABLE);
+        return SetmealOverViewVO
+                .builder()
+                .sold(sold)
+                .discontinued(discontinued)
                 .build();
     }
 }
