@@ -4,11 +4,13 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.entity.Orders;
 import com.sky.entity.Setmeal;
+import com.sky.mapper.DishMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.SetMealMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.WorkspaceService;
 import com.sky.vo.BusinessDataVO;
+import com.sky.vo.DishOverViewVO;
 import com.sky.vo.OrderOverViewVO;
 import com.sky.vo.SetmealOverViewVO;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,9 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     @Autowired
     private SetMealMapper setMealMapper;
+
+    @Autowired
+    private DishMapper dishMapper;
 
 
     /**
@@ -144,6 +149,23 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         // 已停售套餐数量
         Integer discontinued = setMealMapper.countByStatus(StatusConstant.DISABLE);
         return SetmealOverViewVO
+                .builder()
+                .sold(sold)
+                .discontinued(discontinued)
+                .build();
+    }
+
+    /**
+     * 查询菜品总览
+     * @return
+     */
+    @Override
+    public DishOverViewVO overviewDishes() {
+        // 已起售菜品数量
+        Integer sold = dishMapper.countByStatus(StatusConstant.ENABLE);
+        // 已停售菜品数量
+        Integer discontinued = dishMapper.countByStatus(StatusConstant.DISABLE);
+        return DishOverViewVO
                 .builder()
                 .sold(sold)
                 .discontinued(discontinued)
