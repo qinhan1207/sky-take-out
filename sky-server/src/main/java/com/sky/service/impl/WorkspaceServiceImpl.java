@@ -46,10 +46,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
      * @return
      */
     @Override
-    public BusinessDataVO businessData() {
-        // 定义一个LocalDateTime类型的begin和end分别表示今天一天中最早的时间和最晚的时间
-        LocalDateTime begin = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
-        LocalDateTime end = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
+    public BusinessDataVO businessData(LocalDateTime begin,LocalDateTime end) {
 
         Map map = new HashMap();
         map.put("begin", begin);

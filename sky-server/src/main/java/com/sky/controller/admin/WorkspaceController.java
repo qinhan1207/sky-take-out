@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 @RestController
 @RequestMapping("/admin/workspace")
 @Api(tags = "工作台接口")
@@ -32,7 +36,10 @@ public class WorkspaceController {
     @ApiOperation("查询今日运营的数据")
     public Result<BusinessDataVO> businessData(){
         log.info("查询今日运营的数据");
-        BusinessDataVO businessDataVO = workspaceService.businessData();
+        // 定义一个LocalDateTime类型的begin和end分别表示今天一天中最早的时间和最晚的时间
+        LocalDateTime begin = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
+        LocalDateTime end = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
+        BusinessDataVO businessDataVO = workspaceService.businessData(begin,end);
         return Result.success(businessDataVO);
     }
 
