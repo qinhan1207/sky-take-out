@@ -52,7 +52,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         map.put("begin", begin);
         map.put("end", end);
 
-        Double turnover = 0.0;
+
 
         Integer totalOrderCount = 0;
 
@@ -67,7 +67,11 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         map.put("status", Orders.COMPLETED);
 
         // 营业额
-        turnover = orderMapper.sumByMap(map);
+
+        Double turnover = orderMapper.sumByMap(map);
+        if (turnover == null) {
+            turnover = 0.0;
+        }
 
         // 有效订单数
         Integer validOrderCount = orderMapper.countOrderByMap(map);
